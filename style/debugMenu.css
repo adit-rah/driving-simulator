@@ -1,0 +1,11 @@
+.debug-menu {
+    position: absolute; 
+    top: 10px; 
+    left: 10px; 
+    background-color: rgba(0, 0, 0, 0.5); 
+    color: white; 
+    padding: 10px; 
+    font-family: Arial, sans-serif; 
+    font-size: 14px; 
+    z-index: 10;
+}
