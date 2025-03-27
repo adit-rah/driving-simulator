@@ -1,5 +1,4 @@
 import * as THREE from 'three';
-import { carBody } from './car.js';
 import { cameraBody } from './debugging/cameraPhysics.js';
 import * as debug from './debugging/debugData.js';
 
