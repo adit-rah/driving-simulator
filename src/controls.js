@@ -1,5 +1,6 @@
 import { handleCameraFreeFly } from './camera.js';
 import { handleCarDrive } from './car.js';
+import { toggleDriverSeatLock } from './camera.js';
 import * as debug from './debugging/debugData.js';
 
 // This file looks purely at body movement controls, not camera movement. 
@@ -43,6 +44,7 @@ function toggleFreeMovement() {
 window.addEventListener('keydown', (e) => {
   if (e.key === 'p') togglePhysicsCamera();
   if (e.key === 'h') toggleFreeMovement();
+  if (e.key === 'l') toggleDriverSeatLock();
   keys[e.key.toLowerCase()] = true
 });
 

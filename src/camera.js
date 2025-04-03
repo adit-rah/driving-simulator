@@ -1,5 +1,6 @@
 import * as THREE from 'three';
 import { cameraBody } from './debugging/cameraPhysics.js';
+import { chassisBody } from './car.js';
 import * as debug from './debugging/debugData.js';
 
 // INITIALIZATION ============================================================
@@ -8,15 +9,18 @@ const rotationSpeed = 0.002;  // Sensitivity of the camera rotation
 let yaw = 0;                  // Horizontal rotation (yaw)
 let pitch = 0;                // Vertical rotation (pitch)
 let isMouseLocked = false;    // Track if the mouse is locked
+let cameraDriverLock = false; // Track if camera is locked to the car 
+const driverSeatOffset = new THREE.Vector3(0.2, 1, 0.5);
 
 let flags = {
-  'Camera Lock':  isMouseLocked,  
+  'Camera Lock':  isMouseLocked,
+  'Driverseat Lock': cameraDriverLock,   
 };
 debug.updateFlags(flags); 
 
 // Maximum and minimum pitch (to avoid flipping)
-const MAX_PITCH = Math.PI / 2 - 0.1;    // Can't look directly up
-const MIN_PITCH = -Math.PI / 2 + 0.1;   // Can't look directly down
+const MAX_PITCH = Math.PI / 2 - 0.1;
+const MIN_PITCH = -Math.PI / 2 + 0.1;
 
 // Debug Constant(s)
 const moveSpeed = 0.1;        // Camera Free Fly speed
@@ -40,6 +44,11 @@ function toggleCursorLock() {
     flags['Camera Lock'] = isMouseLocked; 
     debug.updateFlags(flags); 
   }
+}
+
+export function toggleDriverSeatLock() {
+  cameraDriverLock = !cameraDriverLock;
+  console.log("Driver seat lock:", cameraDriverLock ? "ON" : "OFF");
 }
 
 // temporary event listeners 
@@ -67,17 +76,19 @@ window.addEventListener('keydown', (event) => {
 
 // MOVEMENT LOGIc ============================================================
 export function updateCameraPosition() {
-  // Look at the car's position, ensuring the camera maintains focus
-
-  // const carPosition = new THREE.Vector3(carBody.position.x, carBody.position.y, carBody.position.z);
-  // camera.position.copy(carPosition).add(cameraOffset);
-  // camera.lookAt(carPosition);
-  // gone for now. 
-
-  // Apply the yaw (rotation around the Y axis) and pitch (rotation around the X axis)
-  const rotationQuaternion = new THREE.Quaternion();
-  rotationQuaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
-  camera.rotation.setFromQuaternion(rotationQuaternion);
+  if (cameraDriverLock) {
+    const carPos = new THREE.Vector3(chassisBody.position.x, chassisBody.position.y, chassisBody.position.z);
+    const offsetWorld = driverSeatOffset.clone().applyQuaternion(chassisBody.quaternion); // assuming chassisMesh is accessible
+    camera.position.copy(carPos.add(offsetWorld));
+    
+    const correctionQuat = new THREE.Quaternion().setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI); // 180° correction
+    camera.quaternion.copy(chassisBody.quaternion);
+    camera.quaternion.multiply(correctionQuat);
+  } else { // Use Free Fly
+    const rotationQuaternion = new THREE.Quaternion();
+    rotationQuaternion.setFromEuler(new THREE.Euler(pitch, yaw, 0, 'YXZ'));
+    camera.rotation.setFromQuaternion(rotationQuaternion);
+  }
 }
 
 function handleCameraFreeFly(freeMovementFlag, physicsModeFlag, keys) {

@@ -1,4 +1,5 @@
 import * as THREE from 'three';
+import { GLTFLoader } from 'three/examples/jsm/loaders/GLTFLoader.js';
 
 // Initializes the scene. There isn't much, if any, logic in this file.
 
@@ -21,8 +22,11 @@ scene.add(directionalLight);
 // const helper = new THREE.DirectionalLightHelper(directionalLight, 5);
 // scene.add(helper);
 
+// Create 3D Model Loader:
+const modelLoader = new GLTFLoader();
+
 // Create renderer
 const renderer = new THREE.WebGLRenderer({ antialias: true });
 document.body.appendChild(renderer.domElement);
 
-export { scene, renderer };
+export { scene, modelLoader, renderer };

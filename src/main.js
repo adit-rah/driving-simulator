@@ -1,7 +1,7 @@
-// main.js
 import { scene, renderer } from './scene.js';
 import { updateCarPosition } from './car.js';
-import { groundBody, groundMesh } from './ground.js';
+import './ground.js';                                       // These files run only once :D
+import './buildings.js';
 import { world, clock } from './physics.js';
 import { handleControls } from './controls.js';
 import { updateRendererSize } from './renderer.js';
