@@ -1,6 +1,6 @@
 import { scene, renderer } from './scene.js';
 import { updateCarPosition } from './car.js';
-import './ground.js';                                       // These files run only once :D
+import './ground.js';                                       // Do these files run only once? :O
 import './buildings.js';
 import { world, clock } from './physics.js';
 import { handleControls } from './controls.js';

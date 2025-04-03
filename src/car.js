@@ -6,7 +6,10 @@ import { modelLoader } from './scene.js';
 
 // INITIALIZATION ============================================================
 // Car Chassis (Physics & Visual) ============================================
-const chassisGeo = new THREE.BoxGeometry(2, 0.1, 4); // width=2, height=0.1, length=4
+const carWidth = 2.5;
+const carLength = 4; 
+const chassisThickness = 0.1; 
+const chassisGeo = new THREE.BoxGeometry(carWidth, chassisThickness, carLength);
 const chassisMat = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
 const chassisMesh = new THREE.Mesh(chassisGeo, chassisMat);
 
@@ -30,12 +33,8 @@ modelLoader.load('/assets/steering_wheel_l505.glb', (gltf) => {
 
   steeringPivot.add(steeringWheel);
   steeringPivot.position.set(0.5, 1, 1.5); // Position relative to the car
-
-  // const axisHelper = new THREE.AxesHelper(1);
-  // steeringPivot.add(axisHelper);
   
   steeringPivot.rotation.x = Math.PI * 1/6;
-
   chassisMesh.add(steeringPivot); // Attach to car
 });
 
@@ -64,11 +63,12 @@ const wheelOptions = {  // wheel properties
   maxSuspensionTravel: 0.3,
 };
 
+const wheelOffset = 1;          // distance from the corner
 const wheelPositions = [
-  new CANNON.Vec3(-1, 0, 1.5),  // Front left
-  new CANNON.Vec3(1, 0, 1.5),   // Front right
-  new CANNON.Vec3(-1, 0, -1.5), // Rear left
-  new CANNON.Vec3(1, 0, -1.5),  // Rear right
+  new CANNON.Vec3(-carWidth/2, 0, (carLength-wheelOffset)/2),  // Front left
+  new CANNON.Vec3(carWidth/2, 0, (carLength-wheelOffset)/2),   // Front right
+  new CANNON.Vec3(-carWidth/2, 0, -(carLength-wheelOffset)/2), // Rear left
+  new CANNON.Vec3(carWidth/2, 0, -(carLength-wheelOffset)/2),  // Rear right
 ];
 
 // Add wheels to the vehicle
@@ -77,19 +77,19 @@ wheelPositions.forEach((position) => {
   vehicle.addWheel(wheelOptions);
 });
 
+let wheelModel;
+const wheelScale = 0.0045;
 const wheelMeshes = [];
-
-vehicle.wheelInfos.forEach((wheel) => { // for now till i get actual wheel meshes
-  const wheelGeo = new THREE.CylinderGeometry(wheel.radius, wheel.radius, 0.4, 32);
-  const wheelMat = new THREE.MeshStandardMaterial({ color: 0x333333 });
-  const wheelMesh = new THREE.Mesh(wheelGeo, wheelMat);
+modelLoader.load('/assets/wheel.glb', (gltf) => {
+  wheelModel = gltf.scene;
+  wheelModel.scale.set(wheelScale, wheelScale, wheelScale); 
   
-  wheelMesh.rotation.z = Math.PI / 2;
-  
-  scene.add(wheelMesh);
-  wheelMeshes.push(wheelMesh);
+  vehicle.wheelInfos.forEach((wheelInfo, index) => {
+    const wheelMesh = wheelModel.clone();
+    scene.add(wheelMesh);
+    wheelMeshes.push(wheelMesh);
+  });
 });
-
 vehicle.addToWorld(world);
 
 // PHYSICS SYNCHRONIZER ======================================================
@@ -103,11 +103,18 @@ function updateCarPosition() {
     vehicle.updateWheelTransform(i);
     const t = vehicle.wheelInfos[i].worldTransform;
     
-    wheelMeshes[i].position.copy(t.position);
-    const correctionQuat = new THREE.Quaternion();
-    correctionQuat.setFromAxisAngle(new THREE.Vector3(0, 0, 1), Math.PI / 2);
-    wheelMeshes[i].quaternion.copy(t.quaternion);
-    wheelMeshes[i].quaternion.multiply(correctionQuat);
+    if (wheelMeshes[i]) {
+      const correctionQuat = new THREE.Quaternion();
+      if (i === 1 || i === 3) {
+        correctionQuat.setFromAxisAngle(new THREE.Vector3(0, 1, 0), Math.PI/2);
+      } else {
+        correctionQuat.setFromAxisAngle(new THREE.Vector3(0, 1, 0), -Math.PI/2);
+      }
+      
+      wheelMeshes[i].position.copy(t.position);
+      wheelMeshes[i].quaternion.copy(t.quaternion);
+      wheelMeshes[i].quaternion.multiply(correctionQuat);
+    }
   }
 
   // Sync Steering Wheel Rotation
