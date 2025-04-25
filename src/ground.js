@@ -3,30 +3,59 @@ import * as CANNON from 'cannon-es';
 import { scene } from './scene.js';
 import { world } from './physics.js';
 
-// Define ground dimensions
-const groundWidth = 200;
-const groundDepth = 200;
-const groundThickness = 1;  // Thickness of the ground
+// Ground settings
+const tileSize = 50;  // Size of each tile
+const tileGridSize = 3; // 3x3 grid around the car
+const groundTiles = new Map(); // Store tiles with "x,z" as keys
 
-// Ground (Visual)
-// Create a large plane geometry for the ground
-const groundGeo = new THREE.PlaneGeometry(groundWidth, groundDepth);
-const groundMat = new THREE.MeshStandardMaterial({ color: 0x909bad });
-const groundMesh = new THREE.Mesh(groundGeo, groundMat);
-groundMesh.rotation.x = -Math.PI / 2;  // Rotate so it's horizontal
-scene.add(groundMesh);
+// Function to create a new ground tile
+function createGroundTile(x, z) {
+  const key = `${x},${z}`;
+  if (groundTiles.has(key)) return;
 
-// Ground (Physics)
-// Instead of an infinite plane, use a box shape for the ground.
-// We want the top of the box (half-thickness) to be at y = 0.
-const halfExtents = new CANNON.Vec3(groundWidth / 2, groundThickness / 2, groundDepth / 2);
-const groundShape = new CANNON.Box(halfExtents);
-const groundBody = new CANNON.Body({
-  mass: 0,  // Static ground
-});
-groundBody.addShape(groundShape);
-// Position the ground body so that its top surface is at y=0.
-groundBody.position.set(0, -groundThickness / 2, 0);
-world.addBody(groundBody);
+  // THREE.js visual tile
+  const groundGeo = new THREE.PlaneGeometry(tileSize, tileSize);
+  const groundMat = new THREE.MeshStandardMaterial({ color: 0x9cad43 });
+  const groundMesh = new THREE.Mesh(groundGeo, groundMat);
+  groundMesh.rotation.x = -Math.PI / 2;
+  groundMesh.position.set(x, -0.01, z);
+  scene.add(groundMesh);
 
-export { groundBody, groundMesh };
+  // CANNON.js physics tile
+  const groundShape = new CANNON.Plane();
+  const groundBody = new CANNON.Body({ mass: 0 });
+  groundBody.addShape(groundShape);
+  groundBody.position.set(x, 0, z);
+  groundBody.quaternion.setFromEuler(-Math.PI / 2, 0, 0);
+  world.addBody(groundBody);
+
+  groundTiles.set(key, { groundMesh, groundBody });
+}
+
+// Function to update tiles around the car
+function updateGroundTiles(carPos) {
+  const carX = Math.round(carPos.x / tileSize) * tileSize;
+  const carZ = Math.round(carPos.z / tileSize) * tileSize;
+
+  const newTiles = new Set();
+  for (let dx = -tileSize * tileGridSize; dx <= tileSize * tileGridSize; dx += tileSize) {
+    for (let dz = -tileSize * tileGridSize; dz <= tileSize * tileGridSize; dz += tileSize) {
+      const tileX = carX + dx;
+      const tileZ = carZ + dz;
+      createGroundTile(tileX, tileZ);
+      newTiles.add(`${tileX},${tileZ}`);
+    }
+  }
+
+  // Remove old tiles that are too far away
+  for (const key of groundTiles.keys()) {
+    if (!newTiles.has(key)) {
+      const { groundMesh, groundBody } = groundTiles.get(key);
+      scene.remove(groundMesh);
+      world.removeBody(groundBody);
+      groundTiles.delete(key);
+    }
+  }
+}
+
+export { updateGroundTiles };

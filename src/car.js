@@ -32,7 +32,7 @@ modelLoader.load('/assets/steering_wheel_l505.glb', (gltf) => {
   steeringWheel.position.set(0, -1.66, 0); // Center the wheel
 
   steeringPivot.add(steeringWheel);
-  steeringPivot.position.set(0.5, 1, 1.5); // Position relative to the car
+  steeringPivot.position.set(0.5, 0.85, 1.5); // Position relative to the car
   
   steeringPivot.rotation.x = Math.PI * 1/6;
   chassisMesh.add(steeringPivot); // Attach to car
@@ -129,9 +129,9 @@ function updateCarPosition() {
 const engineForceValue = 500;
 
 let currentSteering = 0;
-const maxSteeringAngle = 0.6;  // Maximum steering angle (in radians)
-const steeringIncrement = 0.02;  // How much to change per frame
-const steeringDecay = 0.05;  // How quickly the steering returns to 0
+const maxSteeringAngle = 0.6;     // Maximum steering angle (in radians)
+const steeringIncrement = 0.02;   // How much to change per frame
+const steeringDecay = 0.05;       // How quickly the steering returns to 0
 
 function handleCarDrive(flag, keys) {
   if (!flag) return; 
