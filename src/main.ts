@@ -1,24 +1,24 @@
 // Main entry point
 
 import { Renderer } from './core/renderer';
-import { InputManager } from './core/input';
+import { InputManagerV2 } from './core/input-v2';
 import { PhysicsWorld } from './core/physics';
 import { ChunkManager } from './generator/chunk-manager';
-import { VehicleController } from './vehicle/vehicle-controller';
+import { VehicleControllerV2 } from './vehicle/vehicle-controller-v2';
 import { HUD } from './ui/hud';
 import { MiniMap } from './ui/minimap';
-import { CameraController } from './core/camera-controller';
+import { CameraControllerV2 } from './core/camera-controller-v2';
 import './styles.css';
 
 class Game {
   private renderer!: Renderer;
-  private inputManager!: InputManager;
+  private inputManager!: InputManagerV2;
   private physics!: PhysicsWorld;
   private chunkManager!: ChunkManager;
-  private vehicle!: VehicleController;
+  private vehicle!: VehicleControllerV2;
   private hud!: HUD;
   private minimap!: MiniMap;
-  private cameraController!: CameraController;
+  private cameraController!: CameraControllerV2;
 
   private worldSeed: number = 12345;
   private lastTime: number = 0;
@@ -45,20 +45,20 @@ class Game {
     const appElement = document.getElementById('app')!;
     this.renderer = new Renderer(appElement);
 
-    // Initialize input
-    this.inputManager = new InputManager();
+    // Initialize input (V2)
+    this.inputManager = new InputManagerV2();
 
     // Initialize physics
     this.physics = await PhysicsWorld.create();
     this.physics.createGround();
 
-    // Create vehicle
+    // Create vehicle (V2)
     const vehicleBody = this.physics.createDynamicBox(
       { x: 0, y: 2, z: 0 },
       { x: 2, y: 1, z: 4.5 },
       1200
     );
-    this.vehicle = new VehicleController(vehicleBody, this.renderer.scene);
+    this.vehicle = new VehicleControllerV2(vehicleBody, this.renderer.scene);
 
     // Initialize chunk manager
     this.chunkManager = new ChunkManager(
@@ -72,20 +72,20 @@ class Game {
     const minimapCanvas = document.getElementById('minimap') as HTMLCanvasElement;
     this.minimap = new MiniMap(minimapCanvas);
 
-    // Initialize camera controller
-    this.cameraController = new CameraController(this.renderer.camera);
+    // Initialize camera controller (V2)
+    this.cameraController = new CameraControllerV2(this.renderer.camera);
 
     // Setup camera toggle
     this.inputManager.onCameraToggle = () => {
-      const newMode = this.cameraController.toggleMode();
-      console.log(`Camera: ${newMode}`);
+      this.cameraController.cycleMode();
     };
 
     console.log('Game initialized. Seed:', this.worldSeed);
     console.log('Controls:');
     console.log('  WASD/Arrow Keys - Drive');
+    console.log('  S (hold when stopped) - Reverse');
     console.log('  Space - Handbrake');
-    console.log('  C - Toggle Camera (Third-Person/First-Person)');
+    console.log('  C - Cycle Camera (Third-Person → Birds-Eye → First-Person → Free)');
     console.log('  Gamepad supported if connected');
 
     this.isRunning = true;
@@ -112,8 +112,8 @@ class Game {
 
     this.accumulator += deltaTime;
 
-    // Update input
-    const input = this.inputManager.update();
+    // Update input (V2)
+    const input = this.inputManager.update(deltaTime);
 
     // Fixed timestep physics loop
     while (this.accumulator >= this.fixedTimeStep) {
@@ -122,9 +122,9 @@ class Game {
       this.accumulator -= this.fixedTimeStep;
     }
 
-    // Update camera
+    // Update camera (V2)
     const vehicleState = this.vehicle.getState();
-    this.cameraController.update(vehicleState.position, vehicleState.rotation);
+    this.cameraController.update(vehicleState.position, vehicleState.rotation, deltaTime);
 
     // Update chunk streaming
     this.chunkManager.update(vehicleState.position);

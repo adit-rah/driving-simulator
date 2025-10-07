@@ -5,13 +5,13 @@ A browser-based driving simulator with procedurally generated infinite city, rea
 ## Features
 
 ✅ **Procedurally Generated City**: Deterministic, seeded generation creates an infinite city with roads and buildings  
-✅ **Realistic Vehicle Physics**: Improved bicycle model with smooth acceleration, responsive turning, and lateral grip  
-✅ **Dual Camera Modes**: Toggle between third-person chase cam and immersive first-person view (press C)  
-✅ **Animated Steering Wheel**: Realistic steering wheel rotation visible in first-person mode  
+✅ **Realistic Vehicle Physics**: Clean bicycle model with proper forward/reverse, 6-speed transmission, and realistic handling  
+✅ **4 Camera Modes**: Third-person, birds-eye, first-person (no lag!), and free camera (press C to cycle)  
+✅ **Animated Steering Wheel**: Realistic steering wheel rotation with centered pivot in first-person mode  
 ✅ **Chunk Streaming**: Seamless loading/unloading of city chunks as you drive  
 ✅ **Mini-Map**: Real-time 2D map showing roads, buildings, and your position  
-✅ **HUD**: Speed, gear indicator, and customizable world seed  
-✅ **Input Support**: Keyboard and gamepad controls  
+✅ **HUD**: Speed, 6-speed automatic transmission with reverse, and customizable world seed  
+✅ **Input Support**: Smooth keyboard controls and gamepad support  
 ✅ **Performance**: 60 FPS physics with optimized rendering
 
 ## Quick Start
@@ -45,7 +45,7 @@ npm run preview
 - **A / ←**: Steer Left
 - **D / →**: Steer Right
 - **Space**: Handbrake
-- **C**: Toggle Camera (Third-Person ↔ First-Person)
+- **C**: Cycle Camera (Third-Person → Birds-Eye → First-Person → Free)
 
 ### Gamepad
 - **Left Stick**: Steering
