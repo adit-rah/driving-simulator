@@ -3,14 +3,24 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>Driving Simulator</title>
-    <link rel="stylesheet" href="style/style.css"/>
-    <link rel="stylesheet" href="style/cursor.css"/>
-    <link rel="stylesheet" href="style/debugMenu.css"/>
+    <title>Driving Simulator - MVP</title>
   </head>
   <body>
-    <div id="crosshair"></div>
-    <script type="module" src="/src/main.js"></script>
-    <script type="module" src="/src/cursor.js"></script>
+    <div id="app">
+      <canvas id="minimap"></canvas>
+      <div id="hud">
+        <div class="hud-item" id="speed">0 km/h</div>
+        <div class="hud-item" id="gear">AUTO</div>
+        <div class="hud-item" id="settings">
+          <label>Seed: <input type="number" id="seed-input" value="12345" /></label>
+        </div>
+      </div>
+      <div id="controls-hint">
+        <div>WASD - Drive</div>
+        <div>SPACE - Handbrake</div>
+        <div>C - Toggle Camera</div>
+      </div>
+    </div>
+    <script type="module" src="/src/main.ts"></script>
   </body>
 </html>
